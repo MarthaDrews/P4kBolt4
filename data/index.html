@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMPCC Control</title>
+    <style>
+        :root {
+            --background: #000000;
+            --text: #ffffff;
+            --accent: #ff0000;
+            --slider-bg: #333333;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
+        }
+
+        .camera-list {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+        }
+
+        .camera-item {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .camera-item.active {
+            border: 2px solid var(--accent);
+        }
+
+        .control-group {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 12px 0;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: var(--slider-bg);
+            border-radius: 2px;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .value-display {
+            min-width: 60px;
+            text-align: right;
+        }
+
+        button {
+            background: var(--accent);
+            color: var(--text);
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .status-connected {
+            background: #00ff00;
+        }
+
+        .status-disconnected {
+            background: var(--accent);
+        }
+
+        .status-recording {
+            background: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="camera-list">
+        <!-- Camera items will be added dynamically -->
+    </div>
+
+    <div class="control-group">
+        <h3>Focus Control</h3>
+        <div class="slider-container">
+            <label>Focus</label>
+            <input type="range" id="focus" min="0" max="1" step="0.001" value="0.5">
+            <span class="value-display">0.500</span>
+            <button id="autoFocus">Auto</button>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <h3>Camera Settings</h3>
+        <div class="slider-container">
+            <label>ISO</label>
+            <input type="range" id="iso" min="100" max="25600" step="100" value="400">
+            <span class="value-display">400</span>
+        </div>
+        <div class="slider-container">
+            <label>Shutter</label>
+            <input type="range" id="shutter" min="1" max="360" step="1" value="180">
+            <span class="value-display">180°</span>
+            <button id="autoShutter">Auto</button>
+        </div>
+        <div class="slider-container">
+            <label>White Balance</label>
+            <input type="range" id="wb" min="3200" max="7500" step="50" value="5600">
+            <span class="value-display">5600K</span>
+            <button id="autoWB">Auto</button>
+        </div>
+        <div class="slider-container">
+            <label>Tint</label>
+            <input type="range" id="tint" min="-50" max="50" step="1" value="0">
+            <span class="value-display">0</span>
+        </div>
+        <div class="slider-container">
+            <label>Aperture</label>
+            <input type="range" id="aperture" min="0" max="1" step="0.1" value="0">
+            <span class="value-display">f/2.8</span>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <h3>Frame Rate</h3>
+        <div class="slider-container">
+            <label>FPS</label>
+            <input type="range" id="fps" min="23.98" max="60" step="0.01" value="24">
+            <span class="value-display">24.00</span>
+            <button id="offSpeed">Off Speed</button>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        let connected = false;
+        
+        function connect() {
+            ws = new WebSocket(`ws://${window.location.host}/ws`);
+            
+            ws.onopen = () => {
+                connected = true;
+                console.log('Connected to ESP32');
+            };
+            
+            ws.onclose = () => {
+                connected = false;
+                console.log('Disconnected from ESP32');
+                setTimeout(connect, 1000);
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                updateUI(data);
+            };
+        }
+
+        function updateUI(data) {
+            // Update camera list and controls based on received data
+        }
+
+        function sendCommand(command) {
+            if (connected) {
+                ws.send(JSON.stringify(command));
+            }
+        }
+
+        // Initialize sliders and buttons
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            const display = slider.nextElementSibling;
+            slider.oninput = () => {
+                display.textContent = slider.value;
+                sendCommand({
+                    type: slider.id,
+                    value: parseFloat(slider.value)
+                });
+            };
+        });
+
+        // Connect to WebSocket
+        connect();
+    </script>
+</body>
+</html>

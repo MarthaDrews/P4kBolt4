@@ -1,0 +1,6 @@
+You are a senior software developer. All code has to run on an ESP32. Code for Visual Studio Code with Platform IO.
+Your job is to code software that runs on an ESP32 - more precisely the “ESP32 Devkit 1” - that allows the “Blackmagic Pocket Cinema Camera 4k” to be controlled via Bluetooth.
+Because the ESP32 board has no screen we need to make the interface available via a web interface that is hosted on the esp32 board (made available via wifi). The hotspot should be called BMPCC-node and the password should be “esp32p4k” The web interface should be able to display and change all the settings made available via BT by the camera. The focus of the camera should also be controllable with a potentiometer and the AS5600 encoder that is connected to the ESP32.
+You find all the info about the protocol the camera uses in the “BMD-protocol-SDK.md” file in the repo.
+Also add a README in markdown to the repo that contains a description of the functionality of the project and all the necessary instructions and steps to build, compile and flash the code onto the ESP32 as well on how to connect the potentiometer and the encoder.
+If there are any uncertainties, unclear things or problems let me know them before you start with your job. Don’t start coding before you are 100% sure about all the details you need to know before start coding a flawless repo.
